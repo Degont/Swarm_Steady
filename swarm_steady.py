@@ -2,15 +2,18 @@ from time import sleep
 import sys
 import pygame
 
+from settings_steady import Settings
+from button_steady import Button
 from ship_steady import Ship
 
 class Game():
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((1200,800))
+        self.settings = Settings()
+        self.screen = pygame.display.set_mode((self.settings.screen_width,self.settings.screen_height))
         self.screen_rect = self.screen.get_rect()
         pygame.display.set_caption("Test Game")
-        self.bg_color = (230,230,0)
+        self.bg_color = self.settings.bg_color
 
         self.ship = Ship(self)
 
@@ -27,7 +30,6 @@ class Game():
                 sys.exit()
             if event.type == pygame.KEYDOWN:
                 self._keydown(event)
-                print(event)
             if event.type == pygame.KEYUP:
                 self._keyup(event)
 
@@ -56,9 +58,17 @@ class Game():
 
     def update(self):
         self.screen.fill(self.bg_color)
+
+        # Button
+        self.button = Button(self,f"{round(self.ship.angle,2)}")
+        self.button.draw_button()
+
+        # Ship
         self.ship.draw_ship()
+
+        # Flip
         pygame.display.flip()
-        print(self.ship.image_rect)
+        #print(self.ship.image_rect.center)
 
 if __name__ == "__main__":
     play = Game()

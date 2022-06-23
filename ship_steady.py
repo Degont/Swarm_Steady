@@ -9,8 +9,10 @@ class Ship():
         self.image = pygame.image.load("images/rocket.bmp")
         self.image = pygame.transform.scale(self.image,(60,48))
         self.image_rect = self.image.get_rect()
-        self.image_rect.center = self.screen_rect.center
-        self.speed = 0.5
+        self.image_rect.center = self.screen_rect.midbottom
+        self.image_rect.y -= 40
+        self.speed = game.settings.ship_speed
+        self.angle = 0
 
         self.x = float(self.image_rect.x)
         self.y = float(self.image_rect.y)
@@ -49,33 +51,50 @@ class Ship():
         else:
             center = self.screen_rect.center
 
-        vertical_line = center[0] - self.image_rect.center[0]  # this is the magnitude of the vertical line
-        horizontal_line = center[1] - self.image_rect.center[1]  # this is the magnitude of the horizontal line
+        vertical_line = center[1] - self.image_rect.center[1]  # this is the magnitude of the vertical line
+        horizontal_line = center[0] - self.image_rect.center[0]  # this is the magnitude of the horizontal line
 
         try:
-            if self.image_rect[1] < center[1]:
-                inverter = 180
+            if vertical_line == 0:
+                if center[0] > self.image_rect.center[0]:  # means the ship is on the left of the center
+                    rotated_image = pygame.transform.rotate(self.image,270)
+                    rotated_image_rect = rotated_image.get_rect()
+                    rotated_image_rect.center = self.image_rect.center
+
+                else:
+                    rotated_image = pygame.transform.rotate(self.image, 90)
+                    rotated_image_rect = rotated_image.get_rect()
+                    rotated_image_rect.center = self.image_rect.center
+
             else:
-                inverter = 0
+                if self.image_rect.center[1] < center[1]:
+                    inverter = 180  # means ship is over the center point
+                elif self.image_rect.center[1] > center[1]:
+                    inverter = 0
+                else:
+                    inverter = 360
 
-            angle = math.atan(vertical_line / horizontal_line) * (180 / math.pi)
+                angle = math.atan(horizontal_line / vertical_line) * (180 / math.pi)
+                self.angle = angle
 
-            rotated_image = pygame.transform.rotate(self.image, angle + inverter)
+                rotated_image = pygame.transform.rotate(self.image, angle + inverter)
 
-            rotated_image_rect = rotated_image.get_rect()
-            rotated_image_rect.center = self.image_rect.center
+                rotated_image_rect = rotated_image.get_rect()
+                rotated_image_rect.center = self.image_rect.center
 
-            #self.x = float(self.image_rect.x)
-            #self.y = float(self.image_rect.y)
+                #self.x = float(self.image_rect.x)
+                #self.y = float(self.image_rect.y)
 
 
         except ZeroDivisionError:
             if inverter == 180:
                 rotated_image = self.image
                 rotated_image_rect = rotated_image.get_rect()
+
             else:
                 rotated_image = pygame.transform.rotate(self.image, 180)
                 rotated_image_rect = rotated_image.get_rect()
+            print(f"fuck, {vertical_line,horizontal_line,center[0],self.image_rect.center[0]}")
             pass
 
         return rotated_image, rotated_image_rect
@@ -86,24 +105,16 @@ class Ship():
         # actual drawing
         state = 1
         if state == 1:
-            rotated_image = self._rotate_ship()
-            self.screen.fill((0, 0, 0,), rotated_image[1])
-            self.screen.fill((0, 0, 255,), self.image_rect)
-            #self.screen.blit(rotated_image[0], self.image_rect)
-            pygame.draw.circle(self.screen,(255,0,0),rotated_image[1].midtop,10)
+            rotated_image = self._rotate_ship()  # this gives this function the tuple for my rotated ships
+            #self.screen.fill((0, 0, 0,), rotated_image[1])
+            #self.screen.fill((0, 0, 255,), self.image_rect)
+            self.screen.blit(rotated_image[0], rotated_image[1])
+            #pygame.draw.circle(self.screen,(255,0,0),rotated_image[1].center,10)
 
         else:
             rotated_image = self.image
             self.screen.blit(rotated_image, self.image_rect)
 
-        pygame.draw.line(self.screen,(0,0,0),self.image_rect.midtop,self.screen_rect.center,1)
-        pygame.draw.line(self.screen,(0,0,255,),self.screen_rect.center,(600,self.image_rect.top),1)  # vertical
-        pygame.draw.line(self.screen, (255, 0, 0,), self.image_rect.midtop, (600, self.image_rect.top), 1)  # horizontal
-
-
-    def junk(self):
-        left_corner_x = self.image_rect.topleft[0] + math.cos(math.radians(angle))
-        left_corner_y = self.image_rect.topleft[1] + math.sin(math.radians(angle))
-        right_corner_x = self.image_rect.topright[0] + math.cos(math.radians(angle))
-        right_corner_y = self.image_rect.topright[1] + math.sin(math.radians(angle))
-        pygame.draw.line(self.screen, (255, 0, 0), (left_corner_x, left_corner_y), (right_corner_x, right_corner_y), 1)
+        pygame.draw.line(self.screen,(0,0,0),self.image_rect.center,self.screen_rect.center,1)
+        pygame.draw.line(self.screen,(0,0,255,),self.screen_rect.center,(600,self.image_rect.center[1]),1)  # vertical
+        pygame.draw.line(self.screen, (255, 0, 0,), self.image_rect.center, (600, self.image_rect.center[1]), 1)  # horizontal
