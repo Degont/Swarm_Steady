@@ -8,6 +8,7 @@ class Game():
     def __init__(self):
         pygame.init()
         self.screen = pygame.display.set_mode((1200,800))
+        self.screen_rect = self.screen.get_rect()
         pygame.display.set_caption("Test Game")
         self.bg_color = (230,230,0)
 
@@ -31,23 +32,25 @@ class Game():
                 self._keyup(event)
 
     def _keydown(self,event):
-        if event.key == pygame.K_RIGHT:
+        if event.key == pygame.K_d:
             self.ship.moving_right = True
-        elif event.key == pygame.K_LEFT:
+        elif event.key == pygame.K_a:
             self.ship.moving_left = True
-        elif event.key == pygame.K_UP:
+        elif event.key == pygame.K_w:
             self.ship.moving_up = True
-        elif event.key == pygame.K_DOWN:
+        elif event.key == pygame.K_s:
             self.ship.moving_down = True
+        elif event.key == pygame.K_q:
+            sys.exit()
 
     def _keyup(self,event):
-        if event.key == pygame.K_RIGHT:
+        if event.key == pygame.K_d:
             self.ship.moving_right = False
-        elif event.key == pygame.K_LEFT:
+        elif event.key == pygame.K_a:
             self.ship.moving_left = False
-        elif event.key == pygame.K_UP:
+        elif event.key == pygame.K_w:
             self.ship.moving_up = False
-        elif event.key == pygame.K_DOWN:
+        elif event.key == pygame.K_s:
             self.ship.moving_down = False
 
 
@@ -55,6 +58,7 @@ class Game():
         self.screen.fill(self.bg_color)
         self.ship.draw_ship()
         pygame.display.flip()
+        print(self.ship.image_rect)
 
 if __name__ == "__main__":
     play = Game()
