@@ -6,8 +6,15 @@ class Settings():
         self.screen_height = 800
 
         # ship settings
-        self.ship_speed = 0.1
+        self.ship_speed = 0.5
 
         # button
         self.button_width = 200
         self.button_height = 50
+
+        # bullet
+        self.bullet_width = 3
+        self.bullet_height = 15
+        self.bullet_speed = 0.5
+        self.bullet_color = (70,70,70)
+        self.bullets_allowed = 10

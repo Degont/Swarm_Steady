@@ -5,6 +5,7 @@ import pygame
 from settings_steady import Settings
 from button_steady import Button
 from ship_steady import Ship
+from bullet_steady import Bullet
 
 class Game():
     def __init__(self):
@@ -16,11 +17,13 @@ class Game():
         self.bg_color = self.settings.bg_color
 
         self.ship = Ship(self)
+        self.bullets = pygame.sprite.Group()
 
     def loop(self):
         while True:
             self.events()
             self.ship.update_pos()
+            self._update_weapons()
             self.update()
 
 
@@ -42,6 +45,8 @@ class Game():
             self.ship.moving_up = True
         elif event.key == pygame.K_s:
             self.ship.moving_down = True
+        elif event.key == pygame.K_SPACE:
+            self._fire_bullet()
         elif event.key == pygame.K_q:
             sys.exit()
 
@@ -55,6 +60,32 @@ class Game():
         elif event.key == pygame.K_s:
             self.ship.moving_down = False
 
+    def _fire_bullet(self):
+        """Create a new bullet and add it to the bullets group"""
+        if len(self.bullets) < self.settings.bullets_allowed:
+            new_bullet = Bullet(self,self.ship.ship_direction_2())  # creates new bullet from our bullet class
+            self.bullets.add(new_bullet)  # adds to our sprite group so we can manipulate all at once
+
+    def _update_weapons(self):
+        """Update the position of projectiles and get rid of old bullets """
+        self.bullets.update()  # calling update on a group auto calls update on each instance in the group
+        self._check_collisions()
+
+        # Get rid of bullets that have disappeared
+        for bullet in self.bullets.copy():  # we use copy here so we can loop through the list and remove from it,
+            if bullet.rect.bottom <= 0:
+                self.bullets.remove(bullet)
+            elif bullet.rect.top >= 800:
+                self.bullets.remove(bullet)
+            elif bullet.rect.left <= 0:
+                self.bullets.remove(bullet)
+            elif bullet.rect.right >= 1200:
+                self.bullets.remove(bullet)
+
+    def _check_collisions(self):
+        #pygame.sprite.groupcollide(self.bullets)
+        pass
+
 
     def update(self):
         self.screen.fill(self.bg_color)
@@ -63,8 +94,23 @@ class Game():
         self.button = Button(self,f"{round(self.ship.angle,2)}")
         self.button.draw_button()
 
+        self.button_2 = Button(self,f"Y = {round(self.ship.ship_direction_2()[0],2)}")
+        self.button_2.rect = pygame.Rect(0,self.button_2.height,self.button_2.width,self.button_2.height)
+        self.button_2.msg_image_rect.center = self.button_2.rect.center
+        self.button_2.draw_button()
+
+        self.button_3 = Button(self, f"X = {round(self.ship.ship_direction_2()[1], 2)}")
+        self.button_3.rect = pygame.Rect(0, self.button_3.height*2, self.button_3.width, self.button_3.height)
+        self.button_3.msg_image_rect.center = self.button_3.rect.center
+        self.button_3.draw_button()
+
+
         # Ship
         self.ship.draw_ship()
+
+        # Bullet Shitd
+        for bullet in self.bullets.sprites():
+            bullet.draw_bullet()
 
         # Flip
         pygame.display.flip()
