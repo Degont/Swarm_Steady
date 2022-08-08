@@ -1,11 +1,13 @@
 from time import sleep
 import sys
 import pygame
+from random import randint
 
 from settings_steady import Settings
 from button_steady import Button
 from ship_steady import Ship
 from bullet_steady import Bullet
+from enemy_steady import Enemy
 
 class Game():
     def __init__(self):
@@ -18,12 +20,16 @@ class Game():
 
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()
+        self.enemies = pygame.sprite.Group()
+
+        self.enemy_spawn = 1
 
     def loop(self):
         while True:
             self.events()
             self.ship.update_pos()
             self._update_weapons()
+            self._update_enemies()
             self.update()
 
 
@@ -47,6 +53,8 @@ class Game():
             self.ship.moving_down = True
         elif event.key == pygame.K_SPACE:
             self._fire_bullet()
+        elif event.key == pygame.K_p:
+            self.enemy_spawn *= -1
         elif event.key == pygame.K_q:
             sys.exit()
 
@@ -66,6 +74,20 @@ class Game():
             new_bullet = Bullet(self,self.ship.ship_direction_2())  # creates new bullet from our bullet class
             self.bullets.add(new_bullet)  # adds to our sprite group so we can manipulate all at once
 
+    def _create_enemy(self):
+        """Create a new enemy and add it to the enemies group"""
+        if len(self.enemies) < self.settings.enemy_limit:
+            spawn_location = self._spawn_location()
+            new_enemy = Enemy(self,spawn_location,self.ship.ship_direction_2(spawn_location))  # creates new bullet from our bullet class
+            self.enemies.add(new_enemy)  # adds to our sprite group so we can manipulate all at once
+
+    def _spawn_location(self):
+
+        rand_x = randint(0,self.settings.screen_height)
+        rand_y = randint(0,self.settings.screen_width)
+
+        return rand_x, rand_y
+
     def _update_weapons(self):
         """Update the position of projectiles and get rid of old bullets """
         self.bullets.update()  # calling update on a group auto calls update on each instance in the group
@@ -82,8 +104,34 @@ class Game():
             elif bullet.rect.right >= 1200:
                 self.bullets.remove(bullet)
 
+    def _update_enemies(self):
+        """Updates the position of the enemies"""
+        if self.enemy_spawn == -1:
+            if len(self.enemies) < self.settings.enemy_limit:
+                self._create_enemy()
+
+        self.enemies.update(self.ship.rect.center)
+
+        self._check_collisions()
+
+        for enemy in self.enemies.copy():  # we use copy here so we can loop through the list and remove from it,
+            if enemy.rect.bottom <= 0:
+                self.enemies.remove(enemy)
+            elif enemy.rect.top >= 800:
+                self.enemies.remove(enemy)
+            elif enemy.rect.left <= 0:
+                self.enemies.remove(enemy)
+            elif enemy.rect.right >= 1200:
+                self.enemies.remove(enemy)
+
+
     def _check_collisions(self):
-        #pygame.sprite.groupcollide(self.bullets)
+        pygame.sprite.groupcollide(self.bullets,self.enemies,True,True,None)
+
+        ship_hit = pygame.sprite.spritecollideany(self.ship, self.enemies)
+        if ship_hit:
+            self.enemies.remove(ship_hit)
+
         pass
 
 
@@ -111,6 +159,10 @@ class Game():
         # Bullet Shitd
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
+
+        # Enemy Shit
+        for enemy in self.enemies.sprites():
+            enemy.draw_enemy()
 
         # Flip
         pygame.display.flip()

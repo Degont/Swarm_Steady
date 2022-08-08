@@ -8,15 +8,15 @@ class Ship():
 
         self.image = pygame.image.load("images/rocket.bmp")
         self.image = pygame.transform.scale(self.image,(60,48))
-        self.image_rect = self.image.get_rect()
-        self.image_rect.center = self.screen_rect.midbottom
-        self.image_rect.y -= 40
+        self.rect = self.image.get_rect()
+        self.rect.center = self.screen_rect.midbottom
+        self.rect.y -= 40 # dont know why exactly 40 here but um -- works anyways nice okay
         self.speed = game.settings.ship_speed
         self.c_state = 1  # 1 for mouse, 0 for center of screen
         self.angle = 0
 
-        self.x = float(self.image_rect.x)
-        self.y = float(self.image_rect.y)
+        self.x = float(self.rect.x)
+        self.y = float(self.rect.y)
 
         #Flags
         self.moving_right = False
@@ -29,18 +29,17 @@ class Ship():
         self.movement_counter = False
 
     def update_pos(self):
-        if self.moving_right and self.image_rect.right < self.screen_rect.right:
+        """Moves my ship around"""
+        if self.moving_right and self.rect.right < self.screen_rect.right:
             self.x += self.speed
-        if self.moving_left and self.image_rect.left > self.screen_rect.left:
+        if self.moving_left and self.rect.left > self.screen_rect.left:
             self.x -= self.speed
-        if self.moving_up and self.image_rect.top > self.screen_rect.top:
+        if self.moving_up and self.rect.top > self.screen_rect.top:
             self.y -= self.speed
-        if self.moving_down and self.image_rect.bottom < self.screen_rect.bottom:
+        if self.moving_down and self.rect.bottom < self.screen_rect.bottom:
             self.y += self.speed
-        self.image_rect.x = self.x
-        self.image_rect.y = self.y
-
-
+        self.rect.x = self.x
+        self.rect.y = self.y
     def _rotate_ship(self):
         # rotating ship to stay facing the center of the screen
         """the angle that Im looking for is the tan theta of the opposite over adjacent, rotating to that angle should allow me always feel that force"""
@@ -53,25 +52,29 @@ class Ship():
 
 
         # Calculations
-        vertical_line = center[1] - self.image_rect.center[1]  # this is the magnitude of the vertical line
-        horizontal_line = center[0] - self.image_rect.center[0]  # this is the magnitude of the horizontal line
+        vertical_line = center[1] - self.rect.center[1]  # this is the magnitude of the vertical line
+        horizontal_line = center[0] - self.rect.center[0]  # this is the magnitude of the horizontal line
 
         try:
-            if vertical_line == 0:  # purely handles when the vertical line is zero
-                if center[0] > self.image_rect.center[0]:  # means the ship is on the left of the center
+            # purely handles when the vertical line is zero
+            if vertical_line == 0:
+                if center[0] > self.rect.center[0]:  # means the ship is on the left of the center
                     self.rotated_image = pygame.transform.rotate(self.image,270)
                     self.rotated_image_rect = self.rotated_image.get_rect()
-                    self.rotated_image_rect.center = self.image_rect.center
+                    self.rotated_image_rect.center = self.rect.center
 
                 else:
                     self.rotated_image = pygame.transform.rotate(self.image, 90)
                     self.rotated_image_rect = self.rotated_image.get_rect()
-                    self.rotated_image_rect.center = self.image_rect.center
+                    self.rotated_image_rect.center = self.rect.center
 
+            # Rest of the cases
             else:
-                if self.image_rect.center[1] < center[1]:
+
+                # Inverter to keep track of rotation, dont ask why its not clean it works
+                if self.rect.center[1] < center[1]:
                     inverter = 180  # means ship is over the center point
-                elif self.image_rect.center[1] > center[1]:
+                elif self.rect.center[1] > center[1]:
                     inverter = 0
                 else:
                     inverter = 360
@@ -79,17 +82,18 @@ class Ship():
                 angle = math.atan(horizontal_line / vertical_line) * (180 / math.pi)
                 self.angle = angle
 
+                # Rect stuff
                 self.rotated_image = pygame.transform.rotate(self.image, angle + inverter)
-
                 self.rotated_image_rect = self.rotated_image.get_rect()
-                self.rotated_image_rect.center = self.image_rect.center
+                self.rotated_image_rect.center = self.rect.center
 
         except ZeroDivisionError:
             pass
 
         return self.rotated_image, self.rotated_image_rect
 
-    def ship_direction_2(self):
+    def ship_direction_2(self,enemy_position = None):
+        """Calculates distance and direction from ship """
 
         # state check
         if self.c_state == 1:
@@ -97,9 +101,12 @@ class Ship():
         else:
             end_point = self.screen_rect.center
 
+        if enemy_position:
+            end_point = enemy_position
+
         # magnitudes
-        vert_mag = end_point[1] - self.image_rect.center[1]
-        hori_mag = end_point[0] - self.image_rect.center[0]
+        vert_mag = end_point[1] - self.rect.center[1]
+        hori_mag = end_point[0] - self.rect.center[0]
 
         # Inverter
         if hori_mag > 0:  # this means ship to the left
@@ -148,7 +155,7 @@ class Ship():
 
         else:
             rotated_image = self.image
-            self.screen.blit(rotated_image, self.image_rect)
+            self.screen.blit(rotated_image, self.rect)
 
 
         if self.c_state == 1:
@@ -156,6 +163,6 @@ class Ship():
         else:
             end_point = self.screen_rect.center
 
-        pygame.draw.line(self.screen,(0,0,0),self.image_rect.center,end_point,1)
-        pygame.draw.line(self.screen,(0,0,255,),(end_point[0],self.image_rect.center[1]),end_point,1)  # vertical
-        pygame.draw.line(self.screen, (255, 0, 0,), self.image_rect.center, (end_point[0], self.image_rect.center[1]), 1)  # horizontal
+        pygame.draw.line(self.screen,(0,0,0),self.rect.center,end_point,1)
+        pygame.draw.line(self.screen,(0,0,255,),(end_point[0],self.rect.center[1]),end_point,1)  # vertical
+        pygame.draw.line(self.screen, (255, 0, 0,), self.rect.center, (end_point[0], self.rect.center[1]), 1)  # horizontal
