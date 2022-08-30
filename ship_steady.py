@@ -92,7 +92,7 @@ class Ship():
 
         return self.rotated_image, self.rotated_image_rect
 
-    def ship_direction_2(self,enemy_position = None):
+    def ship_direction_2(self):
         """Calculates distance and direction from ship """
 
         # state check
@@ -101,8 +101,6 @@ class Ship():
         else:
             end_point = self.screen_rect.center
 
-        if enemy_position:
-            end_point = enemy_position
 
         # magnitudes
         vert_mag = end_point[1] - self.rect.center[1]

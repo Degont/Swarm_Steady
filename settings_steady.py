@@ -21,5 +21,5 @@ class Settings():
         self.bullets_allowed = 10
 
         # enemy
-        self.enemy_speed = 0.2
+        self.enemy_speed = 0.5
         self.enemy_limit = 10

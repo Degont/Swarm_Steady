@@ -4,7 +4,7 @@ import math
 from random import randint
 
 class Enemy(Sprite):
-    def __init__(self, game,spawn_location,trajectory):
+    def __init__(self, game,spawn_location):
         super().__init__()
         self.game = game
         self.screen = self.game.screen
@@ -17,12 +17,11 @@ class Enemy(Sprite):
         self.rect.center = spawn_location
 
         # storing bullet position as a float
-        self.trajectory = trajectory
         self.y = float(self.rect.y)
         self.x = float(self.rect.x)
 
         # Movement Flag
-        self.move_style = 2
+        self.move_style = 3
 
     def _trajectory(self,target):
 
@@ -56,7 +55,7 @@ class Enemy(Sprite):
 
         return slope_y, slope_x
 
-    def _trajectory_2(self,target):
+    def _trajectory_3(self,target):
 
         end_point = target
 
@@ -73,7 +72,6 @@ class Enemy(Sprite):
                 y_ratio = 0
             else:
                 if y_mag > 0:
-                    print("pussy")
                     y_ratio = -1
                 else:
                     y_ratio = 1
@@ -95,6 +93,43 @@ class Enemy(Sprite):
 
         return x_ratio, y_ratio
 
+    def _trajectory_4(self,target):
+        """This tragectory function works on the premise of creating a stepsize using
+        speed and the distance to create a ratio of how long it should take to reach the
+        target then brekaing it into x and y steps"""
+
+        end_point = target
+
+        # magnitudes
+        y_mag = end_point[1] - self.rect.center[1]
+        x_mag = end_point[0] - self.rect.center[0]
+        total_mag = abs(x_mag) + abs(y_mag)
+        hyp_mag = math.sqrt((y_mag ** 2) + (x_mag ** 2))
+
+        # slope stuff
+        if x_mag == 0:
+            x_ratio = 0
+            if y_mag == 0:
+                y_ratio = 0
+            else:
+                if y_mag > 0:
+                    y_ratio = -1
+                else:
+                    y_ratio = 1
+        else:
+            if y_mag == 0:
+                y_ratio = 0
+                if x_mag > 0:
+                    x_ratio = 1
+                else:
+                    x_ratio = -1
+            else:
+                stepsize = hyp_mag/self.settings.enemy_speed
+                x_ratio = x_mag/stepsize
+                y_ratio = y_mag/stepsize
+
+        return x_ratio, y_ratio
+
 
     def update(self,target_location):
         """This is what determines the path of the bullet"""
@@ -105,8 +140,15 @@ class Enemy(Sprite):
             self.y += trajectory[0] * self.settings.enemy_speed
             self.x += trajectory[1] * self.settings.enemy_speed
 
+        elif self.move_style == 3:
+            trajectory = self._trajectory_4(target_location)
+
+            # movement stuff
+            self.y += trajectory[1]
+            self.x += trajectory[0]
+
         else:
-            trajectory = self._trajectory_2(target_location)
+            trajectory = self._trajectory_3(target_location)
 
             # movement stuff
             self.y += trajectory[1] * self.settings.enemy_speed

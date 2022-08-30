@@ -78,7 +78,7 @@ class Game():
         """Create a new enemy and add it to the enemies group"""
         if len(self.enemies) < self.settings.enemy_limit:
             spawn_location = self._spawn_location()
-            new_enemy = Enemy(self,spawn_location,self.ship.ship_direction_2(spawn_location))  # creates new bullet from our bullet class
+            new_enemy = Enemy(self,spawn_location)  # creates new bullet from our bullet class
             self.enemies.add(new_enemy)  # adds to our sprite group so we can manipulate all at once
 
     def _spawn_location(self):
@@ -142,15 +142,15 @@ class Game():
         self.button = Button(self,f"{round(self.ship.angle,2)}")
         self.button.draw_button()
 
-        self.button_2 = Button(self,f"Y = {round(self.ship.ship_direction_2()[0],2)}")
+        """self.button_2 = Button(self,f"")
         self.button_2.rect = pygame.Rect(0,self.button_2.height,self.button_2.width,self.button_2.height)
         self.button_2.msg_image_rect.center = self.button_2.rect.center
-        self.button_2.draw_button()
+        self.button_2.draw_button()"""
 
-        self.button_3 = Button(self, f"X = {round(self.ship.ship_direction_2()[1], 2)}")
+        """self.button_3 = Button(self, f"")
         self.button_3.rect = pygame.Rect(0, self.button_3.height*2, self.button_3.width, self.button_3.height)
         self.button_3.msg_image_rect.center = self.button_3.rect.center
-        self.button_3.draw_button()
+        self.button_3.draw_button()"""
 
 
         # Ship
